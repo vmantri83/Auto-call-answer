@@ -10,19 +10,21 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
+//import androidx.compose.runtime.LaunchedEffect
+//import androidx.compose.runtime.remember
+//import androidx.compose.runtime.getValue
+//import androidx.compose.runtime.setValue
+//import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.tooling.preview.Preview
 
 
@@ -34,18 +36,6 @@ class MainActivity : ComponentActivity() {
     )
 
     private lateinit var requestPermissionLauncher: androidx.activity.result.ActivityResultLauncher<Array<String>>
-
-//    private val requestPermissionLauncher = registerForActivityResult(
-//        ActivityResultContracts.RequestMultiplePermissions()
-//    ) { permissions ->
-//        if (permissions.all { it.value }) {
-//            // All permissions granted, start service
-//            startService(Intent(this, CallDetectorService::class.java))
-//        } else {
-//            // Show dialog to go to app settings
-//            showSettingsDialog()
-//        }
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,20 +76,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-//    private fun showSettingsDialog() {
-//        AlertDialog.Builder(this)
-//            .setTitle("Permissions Required")
-//            .setMessage("This app requires phone permissions to function. Please grant them in the app settings.")
-//            .setPositiveButton("Go to Settings") { _, _ ->
-//                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-//                intent.data = Uri.fromParts("package", packageName, null)
-//                startActivity(intent)
-//            }
-//            .setNegativeButton("Cancel", null)
-//            .show()
-//    }
-//}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AutoAnswerApp(onServiceStateChanged: (Boolean) -> Unit) {
     val context = LocalContext.current
@@ -135,42 +112,61 @@ fun AutoAnswerApp(onServiceStateChanged: (Boolean) -> Unit) {
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Switch(
-            checked = isAutoAnswerEnabled,
-            onCheckedChange = {
-                isAutoAnswerEnabled = it
-                PreferenceManager.setAutoAnswerEnabled(context, it)
-                Log.d("AutoAnswerApp", "Auto-answer enabled: $it")
-                onServiceStateChanged(it)}
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Auto Answer: ${if (isAutoAnswerEnabled) "Enabled" else "Disabled"}")
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Answer Delay: ${answerDelay.toInt()} seconds")
-        Slider(
-            value = answerDelay,
-            onValueChange = {
-                answerDelay = it
-                PreferenceManager.setAnswerDelay(context, it.toInt())},
-            valueRange = 1f..30f,
-            steps = 29
-        )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Auto Answer App") }
+            )
+        },
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color(0xFFD8BFFA))
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Auto Answer",
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Switch(
+                checked = isAutoAnswerEnabled,
+                onCheckedChange = {
+                    isAutoAnswerEnabled = it
+                    PreferenceManager.setAutoAnswerEnabled(context, it)
+                    Log.d("AutoAnswerApp", "Auto-answer enabled: $it")
+                    onServiceStateChanged(it)
+                }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Auto Answer: ${if (isAutoAnswerEnabled) "Enabled" else "Disabled"}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Answer Delay: ${answerDelay.toInt()} seconds",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Slider(
+                value = answerDelay,
+                onValueChange = {
+                    answerDelay = it
+                    PreferenceManager.setAnswerDelay(context, it.toInt())
+                },
+                valueRange = 1f..30f,
+                steps = 29
+            )
+        }
     }
 }
 
-@Preview
-@Composable
-fun autoanswerapp(){
-    Scaffold {
-
+    @Preview
+    @Composable
+    fun AutoAnswerAppPreview() {
+        AutoAnswerApp(onServiceStateChanged = {})
     }
-    AutoAnswerApp({})
-
-}
 
